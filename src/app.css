@@ -2,5 +2,5 @@ body { margin: 0; font-family: Inter, sans-serif; background-color: #f7fafc; }
 .container {
     max-width: 1200px;
     margin: 2rem auto;
-    padding: 0 0.9rem;
+    padding: 0 1rem;
   }
