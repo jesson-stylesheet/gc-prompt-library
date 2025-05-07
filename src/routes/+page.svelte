@@ -398,6 +398,7 @@ header h1 {
   border-radius: var(--border-radius-sm);
   flex-grow: 1; /* Keep this */
   min-height: 6rem;
+  max-height: 25vh;
   font-family: var(--font-family-mono); /* Use monospace for code/prompts */
   font-size: 0.875rem;
   line-height: 1.5;
@@ -406,7 +407,7 @@ header h1 {
   cursor: pointer; /* Indicate it's clickable */
   transition: background-color var(--transition-speed) var(--transition-ease), border-color var(--transition-speed) var(--transition-ease);
   position: relative; /* Context for pseudo-elements */
-  overflow: hidden; /* Contain pseudo-elements */
+  overflow-y: auto; /* Changed from overflow: hidden */
 }
 
 .prompt-text-block:hover {
