@@ -170,29 +170,34 @@
     {#if copyError}<p class="copy-error-message">{copyError}</p>{/if} {#if filtered.length === 0}
       <p class="no-results">No prompts match your search or filter.</p>
     {:else}
-      {#each filtered as p (p.id)}
-        <div class="prompt-card">
-          <h2>{p.title}</h2>
-          
-          <pre
-            class="prompt-text-block"
-            class:copied={copiedPromptId === p.id}
-            on:click={() => copyPrompt(p.prompt, p.id)}
-            title="Click to copy prompt"
-            role="button"
-            tabindex="0"
-            on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') copyPrompt(p.prompt, p.id); }}
-          >{#if copiedPromptId === p.id}Copied!{:else}{p.prompt}{/if}</pre> 
-          <p class="use-text"><strong>Use:</strong> {p.use}</p>
-          {#if p.tags && p.tags.length > 0}
-            <div class="tags">
-              {#each p.tags.slice(0, 3) as tag}
-                <span class="tag">{tag}</span>
-              {/each}
-            </div>
-          {/if}
+    {#each filtered as p (p.id)}
+    <div class="prompt-card">
+      <h2>{p.title}</h2>
+      
+      <div
+        class="prompt-text-wrapper"
+        class:copied={copiedPromptId === p.id}
+        on:click={() => copyPrompt(p.prompt, p.id)}
+        title="Click to copy prompt"
+        role="button"
+        tabindex="0"
+        on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') copyPrompt(p.prompt, p.id); }}
+      >
+        <pre
+          class="prompt-text-block"
+          aria-live="polite" >{#if copiedPromptId === p.id}Copied!{:else}{p.prompt}{/if}</pre>
+        <img src="/copy-icon.png" alt="Copy prompt to clipboard" class="copy-icon">
+      </div>
+      <p class="use-text"><strong>Use:</strong> {p.use}</p>
+      {#if p.tags && p.tags.length > 0}
+        <div class="tags">
+          {#each p.tags.slice(0, 3) as tag}
+            <span class="tag">{tag}</span>
+          {/each}
         </div>
-      {/each}
+      {/if}
+    </div>
+  {/each}
     {/if}
   </main>
 
@@ -389,41 +394,90 @@ header h1 {
   color: var(--color-primary-dark);
 }
 
+/* New style for the wrapper */
+.prompt-text-wrapper {
+  position: relative; /* Establishes a positioning context for the icon */
+  flex-grow: 1; /* Allows the wrapper to take available vertical space */
+  min-height: 6rem; /* Matches original min-height of pre */
+  max-height: 25vh; /* Matches original max-height of pre */
+  display: flex; /* To make the pre block fill the wrapper */
+  flex-direction: column; /* Stack pre block */
+  border-radius: var(--border-radius-sm); /* Apply border-radius here */
+  transition: border-color var(--transition-speed) var(--transition-ease), background-color var(--transition-speed) var(--transition-ease);
+  cursor: pointer; /* Indicate it's clickable */
+  background: var(--color-background); /* Default background */
+  border: 1px solid var(--color-border-light); /* Default border */
+}
+
+.prompt-text-wrapper:hover {
+   border-color: var(--color-primary-dark);
+   background-color: #eef; /* Slight background change on wrapper hover */
+}
+
+.prompt-text-wrapper.copied {
+  border-color: var(--color-success);
+  background-color: var(--color-success-light);
+}
+/* --- End Wrapper Style --- */
+
+
 .prompt-text-block {
-  white-space: pre-wrap; /* Keep this */
-  word-wrap: break-word; /* Keep this */
-  background: var(--color-background);
-  border: 1px solid var(--color-border-light);
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--border-radius-sm);
-  flex-grow: 1; /* Keep this */
-  min-height: 6rem;
-  max-height: 25vh;
-  font-family: var(--font-family-mono); /* Use monospace for code/prompts */
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  /* Background and border are now on the wrapper, or can be transparent here */
+  /* padding: var(--space-sm) var(--space-md); -- Adjust padding as needed */
+  padding: var(--space-sm) var(--space-md) calc(1.2em + var(--space-md)) var(--space-md); /* Add bottom padding for icon */
+  /* border-radius: var(--border-radius-sm); -- Applied to wrapper */
+  flex-grow: 1;
+  /* min-height: 6rem; -- Moved to wrapper */
+  /* max-height: 25vh; -- Moved to wrapper */
+  font-family: var(--font-family-mono);
   font-size: 0.875rem;
   line-height: 1.5;
   color: var(--color-text-muted);
-  margin-bottom: var(--space-md);
-  cursor: pointer; /* Indicate it's clickable */
-  transition: background-color var(--transition-speed) var(--transition-ease), border-color var(--transition-speed) var(--transition-ease);
-  position: relative; /* Context for pseudo-elements */
-  overflow-y: auto; /* Changed from overflow: hidden */
+  /* margin-bottom: var(--space-md); -- No longer needed if wrapper handles spacing */
+  /* cursor: pointer; -- Moved to wrapper */
+  /* transition: background-color var(--transition-speed) var(--transition-ease), border-color var(--transition-speed) var(--transition-ease); -- Moved */
+  /* position: relative; -- No longer needed for the pre itself */
+  overflow-y: auto; /* Crucial: a scrollbar will appear on this element */
+  /* Remove background and border if fully handled by wrapper, or set to transparent */
+  background-color: transparent;
+  border: none;
 }
 
-.prompt-text-block:hover {
-   border-color: var(--color-primary-dark); /* Highlight border on hover */
-   background-color: #eef; /* Slight background change */
+/* If the text inside pre needs to change for "Copied!" state */
+.prompt-text-wrapper.copied .prompt-text-block {
+  color: var(--color-success);
+  font-weight: bold;
+  text-align: center;
+  /* Ensure the text content "Copied!" is visible and centered */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* --- Style for the copied state --- */
-.prompt-text-block.copied {
-  border-color: var(--color-success);
-  background-color: var(--color-success-light); /* Use light success color */
-  color: var(--color-success); /* Change text color */
-  font-weight: bold; /* Make "Copied!" bold */
-  text-align: center; /* Center "Copied!" text */
+
+/* --- Style for the absolute copy icon --- */
+.copy-icon {
+    position: absolute; /* Position relative to prompt-text-wrapper */
+    bottom: var(--space-sm); /* e.g., 8px from bottom of wrapper */
+    right: var(--space-sm);  /* e.g., 8px from right of wrapper */
+    width: 1.2em;
+    height: auto;
+    pointer-events: none; /* Clicks pass through to the wrapper */
+    opacity: 0.7; /* Slightly transparent by default */
+    transition: opacity var(--transition-speed) var(--transition-ease);
+    z-index: 1; /* Above the text */
 }
-/* --- End Copied Style --- */
+
+.prompt-text-wrapper:hover .copy-icon {
+    opacity: 1; /* Fully visible on wrapper hover */
+}
+
+.prompt-text-wrapper.copied .copy-icon {
+    opacity: 0; /* Hide icon when "Copied!" text is shown */
+}
+/* --- End Absolute Copy Icon Style --- */
 
 .use-text {
   font-size: 0.9rem;
